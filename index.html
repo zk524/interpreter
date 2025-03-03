@@ -1,12 +1,22 @@
-<button id="run">Run</button>
+<button id="fire">FIRE</button><button id="stop" disabled>STOP</button>
 <script type="module">
-    import init, { counter } from './index.js';
-    init().then(() => {
-        document.getElementById('run').addEventListener('click', () => {
-            const startTime = performance.now();
-            counter()
-            const endTime = performance.now();
-            alert(`runtime: ${endTime - startTime} ms`)
-        });
-    })
+    Object.assign(window, { worker: new Worker("./worker.js", { type: "module" }) })
+    worker.onmessage = function (e) {
+        switch (e.data.type) {
+            case "init":
+                document.getElementById("fire").onclick = () => {
+                    worker.postMessage({ action: "fire" })
+                    document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = false)
+                }
+                document.getElementById("stop").onclick = () => {
+                    console.log("stopped", worker.terminate())
+                    worker = new Worker("./worker.js", { type: "module" })
+                    document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = true)
+                }
+                break
+            case "stop":
+                alert(`${e.data.mesg}`)
+                break
+        }
+    }
 </script>
