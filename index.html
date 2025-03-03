@@ -1,0 +1,12 @@
+<button id="run">Run</button>
+<script type="module">
+    import init, { counter } from './index.js';
+    init().then(() => {
+        document.getElementById('run').addEventListener('click', () => {
+            const startTime = performance.now();
+            counter()
+            const endTime = performance.now();
+            console.log(`runtime: ${endTime - startTime} ms`)
+        });
+    })
+</script>
