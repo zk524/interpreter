@@ -1,9 +1,10 @@
-<button id="fire">FIRE</button><button id="stop" disabled>STOP</button>
+<button id="fire" disabled>FIRE</button><button id="stop" disabled>STOP</button>
 <script type="module">
     Object.assign(window, { worker: new Worker("./worker.js", { type: "module" }) })
     worker.onmessage = function (e) {
         switch (e.data.type) {
             case "init":
+                document.getElementById("fire").disabled = false
                 document.getElementById("fire").onclick = () => {
                     worker.postMessage({ action: "fire" })
                     document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = false)
