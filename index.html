@@ -45,6 +45,7 @@
                     DGA("kill", () => {
                         BTN(["sync", "read", "prov", "send", "kill"], [])
                         IDT("tips", `killed${w.terminate() ?? ""}`)
+                        document.getElementById('prog').style.width = "0%"
                         worker = new Worker("./index.js", { type: "module" })
                         worker.onmessage = WRK(worker)
                     })
