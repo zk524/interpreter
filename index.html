@@ -7,8 +7,8 @@
 <button id="read" disabled>READ</button>
 <button id="prov" disabled>PROV</button>
 <button id="send" disabled>SEND</button>
+<button id="load" disabled>LOAD</button>
 <button id="kill" disabled>KILL</button>
-<button id="load">LOAD</button>
 <div id="tips"></div>
 <textarea id="data" rows="24"></textarea>
 <script type="module">
@@ -24,7 +24,7 @@
         if (e.data.mesg !== "") IDT("tips", e.data.mesg)
         switch (e.data.type) {
             case "init":
-                BTN([], ["sync", "read"])
+                BTN([], ["sync", "read", "load"])
                 DGA("sync", () => {
                     BTN(["sync", "read", "prov", "send"], ["kill"])
                     worker.postMessage({ action: "sync" })
