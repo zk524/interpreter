@@ -40,6 +40,7 @@
                 })
                 DGA("send", () => {
                     BTN(["sync", "read", "prov", "send"], ["kill"])
+                    IDT("tips", "Sending...")
                     worker.postMessage({ action: "send", tx: IDV("data") })
                 })
                 DGA("kill", () => {
@@ -67,7 +68,7 @@
                 IDV("data", e.data.tx)
                 break
             case "sent":
-                BTN(["send"], [])
+                BTN(["send"], ["sync", "read", "prov"])
                 IDV("data", "")
                 break
             case "prog":
