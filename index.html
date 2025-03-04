@@ -11,8 +11,12 @@
 <button id="kill" disabled>KILL</button>
 <div id="tips"></div>
 <textarea id="data" rows="24"></textarea>
+<div>
+    <p>Readme</p>
+    <p>Stay tuned</p>
+</div>
 <script type="module">
-    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px}` }))
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px} p{margin:3px 0}` }))
     Object.assign(window, {
         worker: new Worker("./index.js", { type: "module" }),
         BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(n => document.getElementById(n).disabled = !i)),
