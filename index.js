@@ -8,25 +8,22 @@ init().then(() => {
                     await sync_state()
                     self.postMessage({ type: "synced", mesg: `Synced!` })
                 } catch (e) {
-                    self.postMessage({ type: 'mesg', mesg: e.toString() })
+                    self.postMessage({ type: 'mesg', mesg: `Error: ${e.toString()}` })
                 }
                 break
             case "read":
                 const count = counter()
-                self.postMessage({ type: "read", mesg: `count: ${count}` })
+                self.postMessage({ type: "read", mesg: `Count: ${count}` })
                 break
             case "prov":
                 const start = performance.now()
                 const tx = generate_tx()
                 const end = performance.now()
-                self.postMessage({ type: "prov", tx, mesg: end - start })
+                self.postMessage({ type: "prov", tx, mesg: `Cost time: ${end - start} ms` })
                 break
             case "send":
                 await send_tx(e.data.tx)
-                self.postMessage({ type: "sent", mesg: `tx sent.` })
-                break
-            case "stop":
-                self.postMessage({ type: 'mesg', mesg: "stopped" })
+                self.postMessage({ type: "sent", mesg: `TX has been sent.` })
                 break
         }
     }
