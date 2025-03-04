@@ -1,6 +1,6 @@
 <button id="fire" disabled>FIRE</button><button id="stop" disabled>STOP</button>
 <script type="module">
-    Object.assign(window, { worker: new Worker("./counter.js", { type: "module" }) })
+    Object.assign(window, { worker: new Worker("./worker.js", { type: "module" }) })
     worker.onmessage = function (e) {
         switch (e.data.type) {
             case "init":
@@ -11,13 +11,12 @@
                 }
                 document.getElementById("stop").onclick = () => {
                     console.log("stopped", worker.terminate())
-                    worker = new Worker("./counter.js", { type: "module" })
+                    worker = new Worker("./worker.js", { type: "module" })
                     document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = true)
                 }
                 break
             case "stop":
-                console.log(`${e.data.mesg}`)
-                document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = true)
+                alert(`${e.data.mesg}`)
                 break
         }
     }

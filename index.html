@@ -1,22 +1,74 @@
-<button id="fire" disabled>FIRE</button><button id="stop" disabled>STOP</button>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<input id="file" type="file" />
+<button id="sync" disabled>SYNC</button>
+<button id="read" disabled>READ</button>
+<button id="prov" disabled>PROV</button>
+<button id="send" disabled>SEND</button>
+<button id="kill" disabled>KILL</button>
+<button id="load">LOAD</button>
+<textarea id="data" rows="24"></textarea>
 <script type="module">
-    Object.assign(window, { worker: new Worker("./worker.js", { type: "module" }) })
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none}` }))
+    Object.assign(window, {
+        worker: new Worker("./index.js", { type: "module" }),
+        BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(n => document.getElementById(n).disabled = !i)),
+        DGA: (id, e, f) => typeof e === "string" ? document.getElementById(id).addEventListener(e, f) : document.getElementById(id).onclick = e,
+    })
     worker.onmessage = function (e) {
         switch (e.data.type) {
             case "init":
-                document.getElementById("fire").disabled = false
-                document.getElementById("fire").onclick = () => {
-                    worker.postMessage({ action: "fire" })
-                    document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = false)
-                }
-                document.getElementById("stop").onclick = () => {
-                    console.log("stopped", worker.terminate())
-                    worker = new Worker("./worker.js", { type: "module" })
-                    document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = true)
-                }
+                BTN([], ["sync", "read"])
+                DGA("sync", () => {
+                    BTN(["sync", "read", "prov", "send"], ["kill"])
+                    worker.postMessage({ action: "sync" })
+                })
+                DGA("read", () => {
+                    BTN([], ["prov"])
+                    worker.postMessage({ action: "read" })
+                })
+                DGA("prov", () => {
+                    BTN(["sync", "read", "prov", "send"], ["kill"])
+                    worker.postMessage({ action: "prov" })
+                })
+                DGA("send", () => {
+                    BTN(["sync", "read", "prov", "send"], ["kill"])
+                    worker.postMessage({ action: "send", sendTx: document.getElementById("data").value })
+                })
+                DGA("kill", () => {
+                    BTN(["sync", "read", "prov", "send", "kill"], [])
+                    alert(`killed${worker.terminate() ?? ""}`)
+                    worker = new Worker("./index.js", { type: "module" })
+                })
+                DGA("load", () => document.getElementById("file").click())
+                DGA("file", "change", (e) => {
+                    const [reader, file] = [new FileReader(), ...e.target.files]
+                    if (!file) return
+                    reader.onload = e => document.getElementById("data").value = Array.from(new Uint8Array(e.target.result)).map(x => x.toString(16).padStart(2, '0')).join('')
+                    reader.readAsArrayBuffer(file)
+                    BTN([], ["send"])
+                })
+                DGA("data", "input", function () {
+                    document.getElementById("send").disabled = !this.value
+                })
                 break
-            case "stop":
-                alert(`${e.data.mesg}`)
+            case "synced":
+                BTN([], ["sync", "read", "prov"])
+                alert(e.data.mesg)
+                break
+            case "read":
+                alert(e.data.mesg)
+                break
+            case "prov":
+                BTN([], ["send"])
+                document.getElementById("data").value = e.data.tx
+                break
+            case "sent":
+                BTN(["send"], [])
+                alert(e.data.mesg)
+                document.getElementById("data").value = ""
+                break
+            case "mesg":
+                console.log(`${e.data.mesg}`)
                 break
         }
     }
