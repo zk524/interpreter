@@ -71,7 +71,7 @@
                 IDV("data", "")
                 break
             case "prog":
-                document.getElementById('prog').style.width = (Number(e.data.a) / Number(e.data.b) * 100).toFixed(2) + '%'
+                document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
                 IDT("tips", `Progress:\t${e.data.a} / ${e.data.b}`)
                 break
         }
