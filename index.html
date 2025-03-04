@@ -19,62 +19,64 @@
         IDV: (id, v) => v === void 0 ? document.getElementById(id).value : (document.getElementById(id).value = v),
         IDT: (id, t) => t === void 0 ? document.getElementById(id).innerText : (document.getElementById(id).innerText = t),
         DGA: (id, e, f) => typeof e === "string" ? document.getElementById(id).addEventListener(e, f) : document.getElementById(id).onclick = e,
-    })
-    worker.onmessage = function (e) {
-        if (e.data.mesg !== "") IDT("tips", e.data.mesg)
-        switch (e.data.type) {
-            case "init":
-                BTN([], ["sync", "read", "load"])
-                DGA("sync", () => {
-                    BTN(["sync", "read", "prov", "send"], ["kill"])
-                    worker.postMessage({ action: "sync" })
-                })
-                DGA("read", () => {
-                    BTN([], ["prov", "kill"])
-                    worker.postMessage({ action: "read" })
-                })
-                DGA("prov", () => {
-                    BTN(["sync", "read", "prov", "send"], ["kill"])
-                    IDT("tips", "Proving...")
-                    worker.postMessage({ action: "prov" })
-                })
-                DGA("send", () => {
-                    BTN(["sync", "read", "prov", "send"], ["kill"])
-                    IDT("tips", "Sending...")
-                    worker.postMessage({ action: "send", tx: IDV("data") })
-                })
-                DGA("kill", () => {
-                    BTN(["sync", "read", "prov", "send", "kill"], [])
-                    IDT("tips", `killed${worker.terminate() ?? ""}`)
-                    worker = new Worker("./index.js", { type: "module" })
-                })
-                DGA("load", () => document.getElementById("file").click())
-                DGA("file", "change", (e) => {
-                    const [reader, file] = [new FileReader(), ...e.target.files]
-                    if (!file) return
-                    reader.onload = e => IDV("data", Array.from(new Uint8Array(e.target.result)).map(x => x.toString(16).padStart(2, '0')).join(''))
-                    reader.readAsArrayBuffer(file)
+        WRK: (w) => (e) => {
+            if (e.data.mesg !== "") IDT("tips", e.data.mesg)
+            switch (e.data.type) {
+                case "init":
+                    BTN([], ["sync", "read", "load"])
+                    DGA("sync", () => {
+                        BTN(["sync", "read", "prov", "send"], ["kill"])
+                        w.postMessage({ action: "sync" })
+                    })
+                    DGA("read", () => {
+                        BTN([], ["prov", "kill"])
+                        w.postMessage({ action: "read" })
+                    })
+                    DGA("prov", () => {
+                        BTN(["sync", "read", "prov", "send"], ["kill"])
+                        IDT("tips", "Proving...")
+                        w.postMessage({ action: "prov" })
+                    })
+                    DGA("send", () => {
+                        BTN(["sync", "read", "prov", "send"], ["kill"])
+                        IDT("tips", "Sending...")
+                        w.postMessage({ action: "send", tx: IDV("data") })
+                    })
+                    DGA("kill", () => {
+                        BTN(["sync", "read", "prov", "send", "kill"], [])
+                        IDT("tips", `killed${w.terminate() ?? ""}`)
+                        worker = new Worker("./index.js", { type: "module" })
+                        worker.onmessage = WRK(worker)
+                    })
+                    DGA("load", () => document.getElementById("file").click())
+                    DGA("file", "change", (e) => {
+                        const [reader, file] = [new FileReader(), ...e.target.files]
+                        if (!file) return
+                        reader.onload = e => IDV("data", Array.from(new Uint8Array(e.target.result)).map(x => x.toString(16).padStart(2, '0')).join(''))
+                        reader.readAsArrayBuffer(file)
+                        BTN([], ["send"])
+                    })
+                    DGA("data", "input", function () {
+                        document.getElementById("send").disabled = !this.value
+                    })
+                    break
+                case "synced":
+                    BTN([], ["sync", "read", "prov"])
+                    break
+                case "prov":
                     BTN([], ["send"])
-                })
-                DGA("data", "input", function () {
-                    document.getElementById("send").disabled = !this.value
-                })
-                break
-            case "synced":
-                BTN([], ["sync", "read", "prov"])
-                break
-            case "prov":
-                BTN([], ["send"])
-                IDV("data", e.data.tx)
-                break
-            case "sent":
-                BTN(["send"], ["sync", "read", "prov"])
-                IDV("data", "")
-                break
-            case "prog":
-                document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
-                IDT("tips", `Progress:\t${e.data.a} / ${e.data.b}`)
-                break
+                    IDV("data", e.data.tx)
+                    break
+                case "sent":
+                    BTN(["send"], ["sync", "read", "prov"])
+                    IDV("data", "")
+                    break
+                case "prog":
+                    document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
+                    IDT("tips", `Progress:\t${e.data.a} / ${e.data.b}`)
+                    break
+            }
         }
-    }
+    })
+    worker.onmessage = WRK(worker)
 </script>
