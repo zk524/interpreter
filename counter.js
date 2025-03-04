@@ -1,17 +1,14 @@
 import init, { sync_state, counter, generate_tx, send_tx } from './counter_wasm.js'
 init().then(() => {
     self.postMessage({ type: 'init' })
-    self.onmessage = function (e) {
+    self.onmessage = async (e) => {
         switch (e.data.action) {
             case "fire":
-                try {
-                    const startTime = performance.now()
-                    const result = sync_state()
-                    const endTime = performance.now()
-                    self.postMessage({ type: "stop", mesg: `${endTime - startTime} ms` })
-                } catch (e) {
-                    self.postMessage({ type: 'stop', mesg: e.toString() })
-                }
+                const startTime = performance.now()
+                await sync_state()
+                    .then(() => console.log("successfully"))
+                    .catch((e) => console.error(e))
+                    .finally(() => self.postMessage({ type: "stop", mesg: `${performance.now() - startTime} ms` }))
                 break
             case "stop":
                 self.postMessage({ type: 'stop', mesg: "stopped" })
