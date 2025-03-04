@@ -9,14 +9,22 @@
 <button id="send" disabled>SEND</button>
 <button id="load" disabled>LOAD</button>
 <button id="kill" disabled>KILL</button>
-<div id="tips"></div>
-<textarea id="data" rows="24"></textarea>
-<div>
-    <p>Readme</p>
-    <p>Stay tuned</p>
-</div>
+<button id="dump" disabled>DUMP</button>
+<button id="rest" disabled>REST</button>
+<div id="tips">Loading...</div>
+<textarea id="data" rows="16" disabled></textarea>
+<ul>
+    <li><span>SYNC</span>Get transaction list from network and update local state.</li>
+    <li><span>READ</span>Get the stauts of counter.</li>
+    <li><span>PROV</span>Generate ZK-proof and transaction payload, increase the value of counter by one.</li>
+    <li><span>SEND</span>Send the generated transaction payload to the network.</li>
+    <li><span>LOAD</span>Import transaction payload file.</li>
+    <li><span>KILL</span>Terminate this interpreter.</li>
+    <li><span>DUMP</span>Persist the state locally to facilitate next synchronization.</li>
+    <li><span>REST</span>Read locally saved state and apply.</li>
+</ul>
 <script type="module">
-    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px} p{margin:3px 0}` }))
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px} ul{padding:0 16px;margin:4px} li{margin-bottom:12px} span{display:block;font-weight:bold}` }))
     Object.assign(window, {
         worker: new Worker("./index.js", { type: "module" }),
         BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(n => document.getElementById(n).disabled = !i)),
@@ -28,6 +36,7 @@
             switch (e.data.type) {
                 case "init":
                     BTN([], ["sync", "read", "load"])
+                    IDT("tips", "Loaded.")
                     DGA("sync", () => {
                         BTN(["sync", "read", "prov", "send"], ["kill"])
                         IDT("tips", "Syncing...")
@@ -55,12 +64,18 @@
                         worker.onmessage = WRK(worker)
                     })
                     DGA("load", () => document.getElementById("file").click())
+                    DGA("dump", () => {
+
+                    })
+                    DGA("rest", () => {
+
+                    })
                     DGA("file", "change", (e) => {
                         const [reader, file] = [new FileReader(), ...e.target.files]
                         if (!file) return
                         reader.onload = e => IDV("data", Array.from(new Uint8Array(e.target.result)).map(x => x.toString(16).padStart(2, '0')).join(''))
                         reader.readAsArrayBuffer(file)
-                        BTN([], ["send"])
+                        document.getElementById("sync").disabled || BTN([], ["send"])
                         IDT("tips", `TX has been loaded.`)
                     })
                     DGA("data", "input", function () {
@@ -68,10 +83,10 @@
                     })
                     break
                 case "synced":
-                    BTN([], ["sync", "read", "prov"])
+                    BTN([], ["sync", "read", "prov", "send"])
                     break
                 case "prov":
-                    BTN([], ["send"])
+                    BTN([], ["sync", "read", "prov", "send"])
                     IDV("data", e.data.tx)
                     break
                 case "sent":
@@ -80,7 +95,7 @@
                     break
                 case "prog":
                     document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
-                    IDT("tips", `Progress:\t${e.data.a} / ${e.data.b}`)
+                    IDT("tips", Number(e.data.a) <= 1 ? "Initializing..." : `Progress:\t${e.data.a} / ${e.data.b}`)
                     break
             }
         }

@@ -10,22 +10,34 @@ init().then(() => {
                     await sync_state()
                     self.postMessage({ type: "synced", mesg: `Synced!` })
                 } catch (e) {
-                    self.postMessage({ type: 'mesg', mesg: `Error: ${e.toString()}` })
+                    self.postMessage({ type: 'synced', mesg: `Error: ${e.toString()}` })
                 }
                 break
             case "read":
-                const count = counter()
-                self.postMessage({ type: "read", mesg: `Count: ${count}` })
+                try {
+                    const count = counter()
+                    self.postMessage({ type: "read", mesg: `Count: ${count}` })
+                } catch {
+                    self.postMessage({ type: "read", mesg: `Read failed.` })
+                }
                 break
             case "prov":
-                const start = performance.now()
-                const tx = generate_tx()
-                const end = performance.now()
-                self.postMessage({ type: "prov", tx, mesg: `Proved! Cost time: ${end - start} ms` })
+                try {
+                    const start = performance.now()
+                    const tx = generate_tx()
+                    const end = performance.now()
+                    self.postMessage({ type: "prov", tx, mesg: `Proved! Cost time: ${(end - start).toFixed(4)} ms` })
+                } catch {
+                    self.postMessage({ type: "prov", tx: "", mesg: `Prove failed.` })
+                }
                 break
             case "send":
-                await send_tx(e.data.tx)
-                self.postMessage({ type: "sent", mesg: `TX has been sent.` })
+                try {
+                    await send_tx(e.data.tx)
+                    self.postMessage({ type: "sent", mesg: `TX has been sent.` })
+                } catch {
+                    self.postMessage({ type: "sent", mesg: `Sent failed.` })
+                }
                 break
         }
     }
