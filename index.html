@@ -1,20 +1,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div id="proc">
+    <div id="prog"></div>
+</div>
 <input id="file" type="file" />
 <button id="sync" disabled>SYNC</button>
 <button id="read" disabled>READ</button>
 <button id="prov" disabled>PROV</button>
 <button id="send" disabled>SEND</button>
 <button id="kill" disabled>KILL</button>
-<button id="load">LOAD</button><br>
-<duv></duv><br>
+<button id="load">LOAD</button>
+<button id="test">TEST</button>
+
 <textarea id="data" rows="24"></textarea>
 <script type="module">
-    document.head.append(Object.assign(document.createElement('style'), { textContent: `textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none}` }))
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px}` }))
     Object.assign(window, {
         worker: new Worker("./index.js", { type: "module" }),
         BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(n => document.getElementById(n).disabled = !i)),
         DGA: (id, e, f) => typeof e === "string" ? document.getElementById(id).addEventListener(e, f) : document.getElementById(id).onclick = e,
+        onProgress: (a) => document.getElementById('prog').style.width = Math.max(0, Math.min(100, a)) + '%'
     })
+
+    DGA("test", () => {
+        let a = 0
+        const timer = setInterval(() => {
+            a += 10
+            if (a > 100) return clearInterval(timer)
+            onProgress(a)
+        }, 300)
+    })
+
     worker.onmessage = function (e) {
         switch (e.data.type) {
             case "init":
@@ -70,7 +85,7 @@
                 document.getElementById("data").value = ""
                 break
             case "mesg":
-                console.log(`${e.data.mesg}`)
+                alert(`${e.data.mesg}`)
                 break
         }
     }
