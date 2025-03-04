@@ -17,6 +17,7 @@
                 break
             case "stop":
                 console.log(`${e.data.mesg}`)
+                document.getElementById("fire").disabled = !(document.getElementById("stop").disabled = true)
                 break
         }
     }

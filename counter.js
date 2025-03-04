@@ -4,11 +4,19 @@ init().then(() => {
     self.onmessage = async (e) => {
         switch (e.data.action) {
             case "fire":
-                const startTime = performance.now()
-                await sync_state()
-                    .then(() => console.log("successfully"))
-                    .catch((e) => console.error(e))
-                    .finally(() => self.postMessage({ type: "stop", mesg: `${performance.now() - startTime} ms` }))
+                try {
+                    await sync_state()
+                    const count = counter()
+                    console.log(count)
+                    const startTime = performance.now()
+                    const tx = generate_tx()
+                    console.log(performance.now() - startTime)
+                    await send_tx(tx)
+                    // self.postMessage({ type: "stop", mesg: `${endTime - startTime} ms` })
+                    self.postMessage({ type: "stop", mesg: `Successfully` })
+                } catch (e) {
+                    self.postMessage({ type: 'stop', mesg: e.toString() })
+                }
                 break
             case "stop":
                 self.postMessage({ type: 'stop', mesg: "stopped" })
