@@ -1,0 +1,23 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<w3m-core-button></w3m-core-button><br>
+<div><textarea id="data" rows="24">0x</textarea><br><input type="file" id="file" /><button id="import">Import</button><button id="submit">Submit</button></div>
+<script defer>
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none}` }))
+    Object.assign(window, { global: {}, process: { env: {} }, chain: { chainId: "0x15eb", chainName: 'opBNB Testnet', nativeCurrency: { name: 'opBNB', symbol: 'opBNB', decimals: 18 }, rpcUrls: ['https://opbnb-testnet-rpc.bnbchain.org'], blockExplorerUrls: ['https://testnet.opbnbscan.com'] }, projectId: "8d4b65a403204449b830fe65ce9648a7" })
+</script>
+<script type="module">
+    import { EthereumClient, w3mConnectors, w3mProvider, WagmiCore, WagmiCoreChains } from "https://unpkg.com/@web3modal/ethereum@2.7.1"
+    import { Web3Modal } from "https://unpkg.com/@web3modal/html@2.7.1"
+    import { ethers } from 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.min.js'
+    Promise.resolve([WagmiCoreChains.mainnet]).then((chains) => new Web3Modal({ projectId }, new EthereumClient(WagmiCore.createConfig({ autoConnect: true, connectors: w3mConnectors({ chains, version: 2, projectId }), publicClient: WagmiCore.configureChains(chains, [w3mProvider({ projectId, chains })]).publicClient }), chains)))
+    document.addEventListener("DOMContentLoaded", () => {
+        WagmiCore.watchAccount(_ => _.isConnected && WagmiCore.getWalletClient().then(_ => new ethers.BrowserProvider((global.client = _)).getSigner()).then(_ => global.signer = _))
+        document.getElementById("submit").onclick = async () => global.client.request({ method: 'eth_chainId' }).then((chainId) => chainId !== chain.chainId && global.client.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chain.chainId }] }).catch((e) => e.code === 4902 && global.client.request({ method: 'wallet_addEthereumChain', params: [chain] }).catch(console.error)).catch(console.error)).then(() => global.signer.sendTransaction({ to: "0x4bf658e7Ad33C7502d9129f347b8C70AA092286A", value: 0, data: document.getElementById("data").value, gasLimit: 99000000 }).then((tx) => open(`https://testnet.opbnbscan.com/tx/${tx.hash}`)))
+        document.getElementById("import").onclick = () => document.getElementById("file").click()
+        document.getElementById("file").onchange = (e) => {
+            const [reader, file] = [new FileReader(), ...e.target.files]
+            reader.onload = e => document.getElementById("data").value = ethers.hexlify(new Uint8Array(e.target.result))
+            reader.readAsArrayBuffer(file)
+        }
+    })
+</script>
