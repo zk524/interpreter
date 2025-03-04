@@ -83,7 +83,8 @@
                     })
                     break
                 case "synced":
-                    BTN([], ["sync", "read", "prov", "send"])
+                    BTN([], ["sync", "read", "prov"])
+                    IDV("data") && BTN([], ["send"])
                     break
                 case "prov":
                     BTN([], ["sync", "read", "prov", "send"])
