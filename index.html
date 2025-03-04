@@ -6,6 +6,7 @@
 <button id="send" disabled>SEND</button>
 <button id="kill" disabled>KILL</button>
 <button id="load">LOAD</button><br>
+<duv></duv><br>
 <textarea id="data" rows="24"></textarea>
 <script type="module">
     document.head.append(Object.assign(document.createElement('style'), { textContent: `textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none}` }))
@@ -23,7 +24,7 @@
                     worker.postMessage({ action: "sync" })
                 })
                 DGA("read", () => {
-                    BTN([], ["prov"])
+                    BTN([], ["prov", "kill"])
                     worker.postMessage({ action: "read" })
                 })
                 DGA("prov", () => {
@@ -32,7 +33,7 @@
                 })
                 DGA("send", () => {
                     BTN(["sync", "read", "prov", "send"], ["kill"])
-                    worker.postMessage({ action: "send", sendTx: document.getElementById("data").value })
+                    worker.postMessage({ action: "send", tx: document.getElementById("data").value })
                 })
                 DGA("kill", () => {
                     BTN(["sync", "read", "prov", "send", "kill"], [])
@@ -60,6 +61,7 @@
                 break
             case "prov":
                 BTN([], ["send"])
+                alert(`cost: ${e.data.mesg} ms`)
                 document.getElementById("data").value = e.data.tx
                 break
             case "sent":

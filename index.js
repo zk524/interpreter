@@ -19,11 +19,10 @@ init().then(() => {
                 const start = performance.now()
                 const tx = generate_tx()
                 const end = performance.now()
-                console.log(`tx generated. cost ${end - start} ms`)
-                self.postMessage({ type: "prov", tx })
+                self.postMessage({ type: "prov", tx, mesg: end - start })
                 break
             case "send":
-                await send_tx(e.data.sendTx)
+                await send_tx(e.data.tx)
                 self.postMessage({ type: "sent", mesg: `tx sent.` })
                 break
             case "stop":
