@@ -19,7 +19,6 @@
         IDV: (id, v) => v === void 0 ? document.getElementById(id).value : (document.getElementById(id).value = v),
         IDT: (id, t) => t === void 0 ? document.getElementById(id).innerText : (document.getElementById(id).innerText = t),
         DGA: (id, e, f) => typeof e === "string" ? document.getElementById(id).addEventListener(e, f) : document.getElementById(id).onclick = e,
-        onProgress: (a) => document.getElementById('prog').style.width = Math.max(0, Math.min(100, a)) + '%'
     })
     worker.onmessage = function (e) {
         if (e.data.mesg !== "") IDT("tips", e.data.mesg)
@@ -36,6 +35,7 @@
                 })
                 DGA("prov", () => {
                     BTN(["sync", "read", "prov", "send"], ["kill"])
+                    IDT("tips", "Proving...")
                     worker.postMessage({ action: "prov" })
                 })
                 DGA("send", () => {
@@ -69,6 +69,10 @@
             case "sent":
                 BTN(["send"], [])
                 IDV("data", "")
+                break
+            case "prog":
+                document.getElementById('prog').style.width = (Number(e.data.a) / Number(e.data.b) * 100).toFixed(2) + '%'
+                IDT("tips", `Progress:\t${e.data.a} / ${e.data.b}`)
                 break
         }
     }
