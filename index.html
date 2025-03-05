@@ -36,7 +36,7 @@
             if (e.data.mesg !== "") IDT("tips", e.data.mesg)
             switch (e.data.type) {
                 case "init":
-                    BTN([], ["sync", "read", "load", "dump", "rest"])
+                    BTN([], ["sync", "read", "load", "rest"])
                     IDT("tips", "Loaded.")
                     DGA("sync", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
@@ -109,6 +109,7 @@
                     a.click()
                     break
                 case "rest":
+                    BTN([], ["dump"])
                     break
             }
         }
