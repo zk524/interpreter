@@ -1,7 +1,5 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<div id="proc">
-    <div id="prog"></div>
-</div>
+<div id="proc"><div id="prog"></div></div>
 <input id="file" type="file" />
 <input id="stat" type="file" />
 <button id="sync" disabled>SYNC</button>
@@ -12,8 +10,7 @@
 <button id="kill" disabled>KILL</button>
 <button id="dump" disabled>DUMP</button>
 <button id="rest" disabled>REST</button>
-<div id="tips">Loading...</div>
-<textarea id="data" rows="16" disabled></textarea>
+<div id="show"><div id="tips"></div><textarea id="data" disabled></textarea></div>
 <ul>
     <li><span>SYNC</span>Get transaction list from network and update local state.</li>
     <li><span>READ</span>Get the stauts of counter.</li>
@@ -25,22 +22,27 @@
     <li><span>REST</span>Read locally saved state and apply.</li>
 </ul>
 <script type="module">
-    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} input{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px} ul{padding:0 16px;margin:4px} li{margin-bottom:12px} span{display:block;font-weight:bold}` }))
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `#tips,#data{height:300px;width:1024px;max-width:100%;margin:0 0;padding: 8px;box-sizing:border-box} input{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition:width 0.5s;} #proc{width:100%;height:12px;margin-bottom:8px} ul{padding:0 16px;margin:4px} li{margin-bottom:12px} span{display:block;font-weight:bold} p{margin:0 0 2px 0} #show {display:flex;width:100%;flex-direction:row;border:2px solid #000;margin:8px 0;} #tips {overflow-y:auto;box-sizing:border-box} @media (max-width:640px) {#show {flex-direction:column}}` }))
     Object.assign(window, {
         worker: new Worker("./index.js", { type: "module" }),
         BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(n => document.getElementById(n).disabled = !i)),
         IDV: (id, v) => v === void 0 ? document.getElementById(id).value : (document.getElementById(id).value = v),
         IDT: (id, t) => t === void 0 ? document.getElementById(id).innerText : (document.getElementById(id).innerText = t),
+        TIP: (t) => {
+            if (!t) return
+            ((p) => (p.innerText = `${new Date().toLocaleTimeString()}\t${t}`, p.style.whiteSpace = "pre", document.getElementById("tips").appendChild(p)))(document.createElement("p"));
+            ((e) => e.scrollTop = e.scrollHeight)(document.getElementById('tips'))
+        },
         DGA: (id, e, f) => typeof e === "string" ? document.getElementById(id).addEventListener(e, f) : document.getElementById(id).onclick = e,
         WRK: (w) => (e) => {
-            if (e.data.mesg !== "") IDT("tips", e.data.mesg)
+            if (e.data.mesg !== "") TIP(e.data.mesg)
             switch (e.data.type) {
                 case "init":
                     BTN([], ["sync", "read", "load", "rest"])
-                    IDT("tips", "Loaded.")
+                    TIP("Loaded.")
                     DGA("sync", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
-                        IDT("tips", "Syncing...")
+                        TIP("Syncing...")
                         w.postMessage({ action: "sync" })
                     })
                     DGA("read", () => {
@@ -49,17 +51,17 @@
                     })
                     DGA("prov", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
-                        IDT("tips", "Proving...")
+                        TIP("Proving...")
                         w.postMessage({ action: "prov" })
                     })
                     DGA("send", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
-                        IDT("tips", "Sending...")
+                        TIP("Sending...")
                         w.postMessage({ action: "send", tx: IDV("data") })
                     })
                     DGA("kill", () => {
                         BTN(["sync", "read", "prov", "send", , "dump", "rest", "kill"], [])
-                        IDT("tips", `killed${w.terminate() ?? ""}`)
+                        TIP(`killed${w.terminate() ?? ""}`)
                         document.getElementById('prog').style.width = "0%"
                         worker = new Worker("./index.js", { type: "module" })
                         worker.onmessage = WRK(worker)
@@ -73,14 +75,14 @@
                         reader.onload = e => IDV("data", Array.from(new Uint8Array(e.target.result)).map(x => x.toString(16).padStart(2, '0')).join(''))
                         reader.readAsArrayBuffer(file)
                         document.getElementById("sync").disabled || BTN([], ["send"])
-                        IDT("tips", `TX has been loaded.`)
+                        TIP(`TX has been loaded.`)
                     })
                     DGA("stat", "change", (e) => {
                         const [reader, file] = [new FileReader(), ...e.target.files]
                         if (!file) return
                         reader.onload = e => w.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
                         reader.readAsArrayBuffer(file)
-                        IDT("tips", `Resting....`)
+                        TIP(`Resting....`)
                     })
                     DGA("data", "input", function () {
                         document.getElementById("send").disabled = !this.value
@@ -100,7 +102,7 @@
                     break
                 case "prog":
                     document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
-                    IDT("tips", `Progress:\t${e.data.a} / ${e.data.b}`)
+                    TIP(`Progress:\t${e.data.a} / ${e.data.b}`)
                     break
                 case "dump":
                     const a = document.createElement("a")
@@ -114,5 +116,6 @@
             }
         }
     })
+    TIP("Loding...")
     worker.onmessage = WRK(worker)
 </script>
