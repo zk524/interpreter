@@ -71,7 +71,7 @@
                     DGA("file", "change", (e) => {
                         const [reader, file] = [new FileReader(), ...e.target.files]
                         if (!file) return
-                        reader.onload = e=> IDV("data", Array.from(new Uint8Array(e.target.result)).map(x => x.toString(16).padStart(2, '0')).join(''))
+                        reader.onload = e => IDV("data", Array.from(new Uint8Array(e.target.result)).map(x => x.toString(16).padStart(2, '0')).join(''))
                         reader.readAsArrayBuffer(file)
                         document.getElementById("sync").disabled || BTN([], ["send"])
                         TIP(`TX has been loaded.`)
