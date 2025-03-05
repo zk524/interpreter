@@ -3,6 +3,7 @@
     <div id="prog"></div>
 </div>
 <input id="file" type="file" />
+<input id="stat" type="file" />
 <button id="sync" disabled>SYNC</button>
 <button id="read" disabled>READ</button>
 <button id="prov" disabled>PROV</button>
@@ -24,7 +25,7 @@
     <li><span>REST</span>Read locally saved state and apply.</li>
 </ul>
 <script type="module">
-    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} #file{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px} ul{padding:0 16px;margin:4px} li{margin-bottom:12px} span{display:block;font-weight:bold}` }))
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `div,textarea{width:1024px;max-width:100%;margin:3px 0} input{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition: width 0.5s;} #proc{ width:100%;height:12px;max-width:1024px} ul{padding:0 16px;margin:4px} li{margin-bottom:12px} span{display:block;font-weight:bold}` }))
     Object.assign(window, {
         worker: new Worker("./index.js", { type: "module" }),
         BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(n => document.getElementById(n).disabled = !i)),
@@ -35,10 +36,10 @@
             if (e.data.mesg !== "") IDT("tips", e.data.mesg)
             switch (e.data.type) {
                 case "init":
-                    BTN([], ["sync", "read", "load"])
+                    BTN([], ["sync", "read", "load", "dump", "rest"])
                     IDT("tips", "Loaded.")
                     DGA("sync", () => {
-                        BTN(["sync", "read", "prov", "send"], ["kill"])
+                        BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
                         IDT("tips", "Syncing...")
                         w.postMessage({ action: "sync" })
                     })
@@ -47,29 +48,25 @@
                         w.postMessage({ action: "read" })
                     })
                     DGA("prov", () => {
-                        BTN(["sync", "read", "prov", "send"], ["kill"])
+                        BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
                         IDT("tips", "Proving...")
                         w.postMessage({ action: "prov" })
                     })
                     DGA("send", () => {
-                        BTN(["sync", "read", "prov", "send"], ["kill"])
+                        BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
                         IDT("tips", "Sending...")
                         w.postMessage({ action: "send", tx: IDV("data") })
                     })
                     DGA("kill", () => {
-                        BTN(["sync", "read", "prov", "send", "kill"], [])
+                        BTN(["sync", "read", "prov", "send", , "dump", "rest", "kill"], [])
                         IDT("tips", `killed${w.terminate() ?? ""}`)
                         document.getElementById('prog').style.width = "0%"
                         worker = new Worker("./index.js", { type: "module" })
                         worker.onmessage = WRK(worker)
                     })
                     DGA("load", () => document.getElementById("file").click())
-                    DGA("dump", () => {
-
-                    })
-                    DGA("rest", () => {
-
-                    })
+                    DGA("dump", () => w.postMessage({ action: "dump" }))
+                    DGA("rest", () => document.getElementById("stat").click())
                     DGA("file", "change", (e) => {
                         const [reader, file] = [new FileReader(), ...e.target.files]
                         if (!file) return
@@ -78,25 +75,40 @@
                         document.getElementById("sync").disabled || BTN([], ["send"])
                         IDT("tips", `TX has been loaded.`)
                     })
+                    DGA("stat", "change", (e) => {
+                        const [reader, file] = [new FileReader(), ...e.target.files]
+                        if (!file) return
+                        reader.onload = e => w.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
+                        reader.readAsArrayBuffer(file)
+                        IDT("tips", `Resting....`)
+                    })
                     DGA("data", "input", function () {
                         document.getElementById("send").disabled = !this.value
                     })
                     break
                 case "synced":
-                    BTN([], ["sync", "read", "prov"])
+                    BTN([], ["sync", "read", "prov", "dump", "rest"])
                     IDV("data") && BTN([], ["send"])
                     break
                 case "prov":
-                    BTN([], ["sync", "read", "prov", "send"])
+                    BTN([], ["sync", "read", "prov", "send", "dump", "rest"])
                     IDV("data", e.data.tx)
                     break
                 case "sent":
-                    BTN(["send"], ["sync", "read", "prov"])
+                    BTN(["send"], ["sync", "read", "prov", "dump", "rest"])
                     IDV("data", "")
                     break
                 case "prog":
                     document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
-                    IDT("tips", Number(e.data.a) <= 1 ? "Initializing..." : `Progress:\t${e.data.a} / ${e.data.b}`)
+                    IDT("tips", `Progress:\t${e.data.a} / ${e.data.b}`)
+                    break
+                case "dump":
+                    const a = document.createElement("a")
+                    a.href = URL.createObjectURL(new Blob([e.data.data], { type: "application/gzip" }))
+                    a.download = `STATE-${new Date().getTime()}.gz`
+                    a.click()
+                    break
+                case "rest":
                     break
             }
         }
