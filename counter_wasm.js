@@ -281,11 +281,11 @@ export function set_counter_circuit_wasm(buffer) {
 }
 
 function __wbg_adapter_28(arg0, arg1, arg2) {
-    wasm.closure354_externref_shim(arg0, arg1, arg2);
+    wasm.closure790_externref_shim(arg0, arg1, arg2);
 }
 
-function __wbg_adapter_122(arg0, arg1, arg2, arg3) {
-    wasm.closure1050_externref_shim(arg0, arg1, arg2, arg3);
+function __wbg_adapter_124(arg0, arg1, arg2, arg3) {
+    wasm.closure1477_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 const __wbindgen_enum_RequestCredentials = ["omit", "same-origin", "include"];
@@ -411,7 +411,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_122(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_124(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -472,6 +472,9 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbg_onprogress_21de7c6c1e0a7abd = function(arg0, arg1) {
         self.on_progress(BigInt.asUintN(64, arg0), BigInt.asUintN(64, arg1));
+    };
+    imports.wbg.__wbg_ontips_1dc5ac3212feeff2 = function(arg0, arg1) {
+        self.on_tips(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_performance_7a3ffd0b17f663ad = function(arg0) {
         const ret = arg0.performance;
@@ -588,8 +591,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper2609 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 355, __wbg_adapter_28);
+    imports.wbg.__wbindgen_closure_wrapper1928 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 791, __wbg_adapter_28);
         return ret;
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
