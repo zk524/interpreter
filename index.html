@@ -75,7 +75,7 @@
                         a.download = `TX-${new Date().getTime()}.txt`
                         a.click()
                     })
-                    DGA("test", () => w.postMessage({ action: "test" }))
+                    DGA("test", () => w.postMessage({ action: "test", data: IDV("data") }))
                     DGA("wipe", () => {
                         IDV("data", "")
                         BTN(["send", "save", "test"],[])
