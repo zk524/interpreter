@@ -15,18 +15,14 @@ init().then(() => {
                 break
             case "read":
                 try {
-                    const count = counter()
-                    self.postMessage({ type: "read", mesg: `Count: ${count}` })
+                    self.postMessage({ type: "read", mesg: `Count: ${counter()}` })
                 } catch {
                     self.postMessage({ type: "mesg", mesg: `Read failed.` })
                 }
                 break
             case "prov":
                 try {
-                    const start = performance.now()
-                    const tx = generate_tx()
-                    const end = performance.now()
-                    self.postMessage({ type: "prov", tx, mesg: `Proved! Cost time: ${(end - start).toFixed(4)} ms` })
+                    self.postMessage({ type: "prov", tx: generate_tx(), mesg: `Finished.` })
                 } catch {
                     self.postMessage({ type: "mesg", tx: "", mesg: `Prove failed.` })
                 }
