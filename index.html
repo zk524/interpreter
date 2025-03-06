@@ -49,7 +49,7 @@
             if (e.data.mesg !== "") TIP(e.data.mesg)
             switch (e.data.type) {
                 case "init":
-                    BTN([], ["sync", "read", "load", "rest", "pump"])
+                    BTN([], ["sync", "read", "load", "wipe", "rest", "pump"])
                     TIP("Loaded.")
                     DGA("sync", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
