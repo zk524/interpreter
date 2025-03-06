@@ -116,14 +116,14 @@
     DGA("stat", "change", (e) => {
         const [reader, file] = [new FileReader(), ...e.target.files]
         if (!file) return
-        reader.onload = e => w.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
+        reader.onload = e => worker.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
         reader.readAsArrayBuffer(file)
         TIP(`Resting....`)
     })
     DGA("bomb", "change", (e) => {
         const [reader, file] = [new FileReader(), ...e.target.files]
         if (!file) return
-        reader.onload = e => w.postMessage({ action: "pump", data: new Uint8Array(e.target.result) })
+        reader.onload = e => worker.postMessage({ action: "pump", data: new Uint8Array(e.target.result) })
         reader.readAsArrayBuffer(file)
         BTN(["sync", "read", "prov", "dump", "rest", "pump"], [])
         TIP(`Pumping...`)
