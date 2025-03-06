@@ -41,7 +41,7 @@
         IDT: (id, t) => t === void 0 ? document.getElementById(id).innerText : (document.getElementById(id).innerText = t),
         TIP: (t) => {
             if (!t) return
-            ((p) => (p.innerText = `${new Date().toLocaleTimeString()}\t${t}`, p.style.whiteSpace = "pre", document.getElementById("tips").appendChild(p)))(document.createElement("p"));
+            ((p) => (p.innerText = `${new Date().toLocaleTimeString()}  ${t}`, p.style.whiteSpace = "pre", document.getElementById("tips").appendChild(p)))(document.createElement("p"));
             ((e) => e.scrollTop = e.scrollHeight)(document.getElementById('tips'))
         },
         DGA: (id, e, f) => typeof e === "string" ? document.getElementById(id).addEventListener(e, f) : document.getElementById(id).onclick = e,
