@@ -2,31 +2,38 @@
 <div id="proc"><div id="prog"></div></div>
 <button id="sync" disabled>SYNC</button>
 <button id="read" disabled>READ</button>
-<button id="prov" disabled>PROV</button>
-<button id="send" disabled>SEND</button>
+<button id="prov" disabled>PROV</button><br />
 <button id="load" disabled>LOAD</button>
-<button id="kill" disabled>KILL</button>
+<button id="send" disabled>SEND</button>
+<button id="save" disabled>SAVE</button>
+<button id="test" disabled>TEST</button>
+<button id="wipe" disabled>WIPE</button><br />
 <button id="dump" disabled>DUMP</button>
 <button id="rest" disabled>REST</button>
 <button id="pump" disabled>PUMP</button>
+<button id="kill" disabled>KILL</button><br />
 <div id="show"><div id="tips"></div><textarea id="data" disabled></textarea></div>
 <input id="file" type="file" /><input id="stat" type="file" /><input id="bomb" type="file" />
 <ul>
     <li><span>SYNC</span>Get transaction list from network and update local state.</li>
     <li><span>READ</span>Get the stauts of counter.</li>
     <li><span>PROV</span>Generate ZK-proof and transaction payload, increase the value of counter by one.</li>
-    <li><span>SEND</span>Send the generated transaction payload to the network.</li>
     <li><span>LOAD</span>Import transaction payload file.</li>
-    <li><span>KILL</span>Terminate this interpreter.</li>
+    <li><span>SEND</span>Send the generated transaction payload to the network.</li>
+    <li><span>SAVE</span>Save the transaction payload locally.</li>
+    <li><span>TEST</span>Verify if the transaction is valid.</li>
+    <li><span>WIPE</span>Clear the displayed transaction details.</li>
     <li><span>DUMP</span>Persist the state locally to facilitate next synchronization.</li>
     <li><span>REST</span>Read locally saved state and apply.</li>
     <li><span>PUMP</span>Use uploaded pre-generated circuit parameters to speed up proofs.<br />Considering safety concerns, binary files will not be made publicly available for the time being.</li>
+    <li><span>KILL</span>Terminate this interpreter.</li>
 </ul>
 <script type="module">
     document.head.append(Object.assign(document.createElement('style'), { textContent: `button{margin-bottom:4px} #tips,#data{height:300px;width:1024px;max-width:100%;margin:0 0;padding: 8px;box-sizing:border-box} input{display:none} #prog{height:100%;width:0%;background-color:#0d0;transition:width 0.5s;} #proc{width:100%;height:12px;margin-bottom:8px} ul{padding:0 16px;margin:16px 4px} li{margin-bottom:12px} span{display:block;font-weight:bold} p{margin:0 0 2px 0} #show {display:flex;width:100%;flex-direction:row;border:2px solid #000;margin:6px 0;} #tips {overflow-y:auto;box-sizing:border-box} @media (max-width:640px) {#show {flex-direction:column}}` }))
     Object.assign(window, {
         worker: new Worker("./index.js", { type: "module" }),
-        BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(n => document.getElementById(n).disabled = !i)),
+        BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(id => id && (document.getElementById(id).disabled = !i))),
+        CLK: (id) => document.getElementById(id).click(),
         IDV: (id, v) => v === void 0 ? document.getElementById(id).value : (document.getElementById(id).value = v),
         IDT: (id, t) => t === void 0 ? document.getElementById(id).innerText : (document.getElementById(id).innerText = t),
         TIP: (t) => {
@@ -47,7 +54,7 @@
                         w.postMessage({ action: "sync" })
                     })
                     DGA("read", () => {
-                        BTN([], ["prov", "kill"])
+                        BTN([], ["prov", "dump", "kill"])
                         w.postMessage({ action: "read" })
                     })
                     DGA("prov", () => {
@@ -55,34 +62,46 @@
                         TIP("Proving...")
                         w.postMessage({ action: "prov" })
                     })
+                    DGA("load", () => CLK("file"))
                     DGA("send", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
                         TIP("Sending...")
-                        w.postMessage({ action: "send", tx: IDV("data") })
+                        w.postMessage({ action: "send", data: IDV("data") })
                     })
+                    DGA("save", () => {
+                        if(!IDV("data")) return
+                        const a = document.createElement("a")
+                        a.href = URL.createObjectURL(new Blob([IDV("data")], { type: "text/plain;charset=utf-8" }))
+                        a.download = `TX-${new Date().getTime()}.txt`
+                        a.click()
+                    })
+                    DGA("test", () => w.postMessage({ action: "test" }))
+                    DGA("wipe", () => {
+                        IDV("data", "")
+                        BTN(["send", "save", "test"],[])
+                    })
+                    DGA("dump", () => w.postMessage({ action: "dump" }))
+                    DGA("rest", () => CLK("stat"))
+                    DGA("pump", () => CLK("bomb"))
                     DGA("kill", () => {
-                        BTN(["sync", "read", "prov", "send", , "dump", "rest", "kill"], [])
+                        BTN(["sync", "read", "prov", "send", "dump", "rest", "pump", "kill"], [])
                         TIP(`killed${w.terminate() ?? ""}`)
+                        CLK("wipe")
                         document.getElementById('prog').style.width = "0%"
                         worker = new Worker("./index.js", { type: "module" })
                         worker.onmessage = WRK(worker)
                     })
-                    DGA("load", () => document.getElementById("file").click())
-                    DGA("dump", () => w.postMessage({ action: "dump" }))
-                    DGA("rest", () => document.getElementById("stat").click())
-                    DGA("pump", () => document.getElementById("bomb").click())
                     break
                 case "synced":
                     BTN([], ["sync", "read", "prov", "dump", "rest"])
                     IDV("data") && BTN([], ["send"])
                     break
                 case "prov":
-                    BTN([], ["sync", "read", "prov", "send", "dump", "rest"])
-                    IDV("data", e.data.tx)
+                    BTN([], ["sync", "read", "prov", "send", "save", "test", "dump", "rest"])
+                    IDV("data", e.data.data)
                     break
                 case "sent":
                     BTN(["send"], ["sync", "read", "prov", "dump", "rest"])
-                    IDV("data", "")
                     break
                 case "prog":
                     document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
@@ -112,6 +131,7 @@
         reader.readAsArrayBuffer(file)
         document.getElementById("sync").disabled || BTN([], ["send"])
         TIP(`TX has been loaded.`)
+        BTN([], ["save", "test", "wipe"])
     })
     DGA("stat", "change", (e) => {
         const [reader, file] = [new FileReader(), ...e.target.files]
@@ -129,6 +149,6 @@
         TIP(`Pumping...`)
     })
     DGA("data", "input", function () {
-        document.getElementById("send").disabled = !this.value
+        document.getElementById("send").disabled = document.getElementById("save").disabled = !(document.getElementById("wipe").disabled = this.value)
     })
 </script>

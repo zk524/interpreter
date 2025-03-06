@@ -22,14 +22,14 @@ init().then(() => {
                 break
             case "prov":
                 try {
-                    self.postMessage({ type: "prov", tx: generate_tx(), mesg: `Finished.` })
+                    self.postMessage({ type: "prov", data: generate_tx(), mesg: `Finished.` })
                 } catch {
-                    self.postMessage({ type: "mesg", tx: "", mesg: `Prove failed.` })
+                    self.postMessage({ type: "mesg", data: "", mesg: `Prove failed.` })
                 }
                 break
             case "send":
                 try {
-                    await send_tx(e.data.tx)
+                    await send_tx(e.data.data)
                     self.postMessage({ type: "sent", mesg: `TX has been sent.` })
                 } catch {
                     self.postMessage({ type: "mesg", mesg: `Sent failed.` })
@@ -55,7 +55,13 @@ init().then(() => {
                     set_counter_circuit_wasm(e.data.data)
                     self.postMessage({ type: "pump", mesg: "Pumped." })
                 } catch {
-                    self.postMessage({ type: "mesg", mesg: `pump failed.` })
+                    self.postMessage({ type: "pump", mesg: `pump failed.` })
+                }
+                break
+            case "test":
+                try {
+                    // set_counter_circuit_wasm(e.data.data)
+                } catch {
                 }
                 break
         }
