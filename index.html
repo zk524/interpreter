@@ -62,7 +62,7 @@
                         TIP("Proving...")
                         w.postMessage({ action: "prov" })
                     })
-                    DGA("load", () => CLK("file"))
+                    DGA("load", () => (IDV("file", ""), CLK("file")))
                     DGA("send", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
                         TIP("Sending...")
