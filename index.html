@@ -128,7 +128,7 @@
         }
     })
     worker.onmessage = WRK(worker)
-    TIP("Loding...")
+    TIP("Loading...")
     DGA("file", "change", (e) => {
         const [reader, file] = [new FileReader(), ...e.target.files]
         if (!file) return
