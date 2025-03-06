@@ -8,8 +8,9 @@
 <button id="kill" disabled>KILL</button>
 <button id="dump" disabled>DUMP</button>
 <button id="rest" disabled>REST</button>
+<button id="pump" disabled>PUMP</button>
 <div id="show"><div id="tips"></div><textarea id="data" disabled></textarea></div>
-<input id="file" type="file" /><input id="stat" type="file" />
+<input id="file" type="file" /><input id="stat" type="file" /><input id="bomb" type="file" />
 <ul>
     <li><span>SYNC</span>Get transaction list from network and update local state.</li>
     <li><span>READ</span>Get the stauts of counter.</li>
@@ -37,7 +38,7 @@
             if (e.data.mesg !== "") TIP(e.data.mesg)
             switch (e.data.type) {
                 case "init":
-                    BTN([], ["sync", "read", "load", "rest"])
+                    BTN([], ["sync", "read", "load", "rest", "pump"])
                     TIP("Loaded.")
                     DGA("sync", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
@@ -68,6 +69,7 @@
                     DGA("load", () => document.getElementById("file").click())
                     DGA("dump", () => w.postMessage({ action: "dump" }))
                     DGA("rest", () => document.getElementById("stat").click())
+                    DGA("pump", () => document.getElementById("bomb").click())
                     DGA("file", "change", (e) => {
                         const [reader, file] = [new FileReader(), ...e.target.files]
                         if (!file) return
@@ -82,6 +84,14 @@
                         reader.onload = e => w.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
                         reader.readAsArrayBuffer(file)
                         TIP(`Resting....`)
+                    })
+                    DGA("bomb", "change", (e) => {
+                        const [reader, file] = [new FileReader(), ...e.target.files]
+                        if (!file) return
+                        reader.onload = e => w.postMessage({ action: "pump", data: new Uint8Array(e.target.result) })
+                        reader.readAsArrayBuffer(file)
+                        BTN(["sync", "read", "prov", "dump", "rest", "pump"], [])
+                        TIP(`Pumping...`)
                     })
                     DGA("data", "input", function () {
                         document.getElementById("send").disabled = !this.value
@@ -111,6 +121,9 @@
                     break
                 case "rest":
                     BTN([], ["dump"])
+                    break
+                case "pump":
+                    BTN([], ["sync", "read", "prov" , "dump", "rest", "pump"])
                     break
             }
         }

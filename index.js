@@ -1,4 +1,4 @@
-import init, { sync_state, counter, generate_tx, send_tx, dump_state, rest_state } from './counter_wasm.js'
+import init, { sync_state, counter, generate_tx, send_tx, dump_state, rest_state, set_counter_circuit_wasm } from './counter_wasm.js'
 init().then(() => {
     self.on_tips = (mesg) => self.postMessage({ type: 'mesg', mesg })
     self.on_progress = (a, b) => self.postMessage({ type: 'prog', a, b })
@@ -52,6 +52,14 @@ init().then(() => {
                     self.postMessage({ type: "rest", mesg: "State has been rest." })
                 } catch {
                     self.postMessage({ type: "mesg", mesg: `Rest failed.` })
+                }
+                break
+            case "pump":
+                try {
+                    set_counter_circuit_wasm(e.data.data)
+                    self.postMessage({ type: "pump", mesg: "Pumped." })
+                } catch {
+                    self.postMessage({ type: "mesg", mesg: `pump failed.` })
                 }
                 break
         }
