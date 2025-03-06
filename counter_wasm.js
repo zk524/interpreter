@@ -282,11 +282,13 @@ export function set_counter_circuit_wasm(buffer) {
 
 /**
  * @param {string} buffer
+ * @returns {boolean}
  */
 export function verify_tx_wasm(buffer) {
     const ptr0 = passStringToWasm0(buffer, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
-    wasm.verify_tx_wasm(ptr0, len0);
+    const ret = wasm.verify_tx_wasm(ptr0, len0);
+    return ret !== 0;
 }
 
 function __wbg_adapter_28(arg0, arg1, arg2) {

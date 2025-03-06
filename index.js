@@ -29,6 +29,8 @@ init().then(() => {
                 break
             case "send":
                 try {
+                    const count = Number(counter())
+                    self.postMessage({ type: "mesg", mesg: `count will change from ${count} to ${count + 1}` })
                     await send_tx(e.data.data)
                     self.postMessage({ type: "sent", mesg: `TX has been sent.` })
                 } catch {
@@ -60,8 +62,10 @@ init().then(() => {
                 break
             case "test":
                 try {
-                    verify_tx_wasm(e.data.data)
+                    const result = verify_tx_wasm(e.data.data)
+                    self.postMessage({ type: "test", mesg: result ? "Verified." : "Invalid tx.", result })
                 } catch {
+                    self.postMessage({ type: "mesg", mesg: "Verified failed" })
                 }
                 break
         }
