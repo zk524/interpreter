@@ -84,8 +84,8 @@
                         BTN(["send", "save", "test"],[])
                     })
                     DGA("dump", () => w.postMessage({ action: "dump" }))
-                    DGA("rest", () => CLK("stat"))
-                    DGA("pump", () => CLK("bomb"))
+                    DGA("rest", () => (IDV("stat", ""), CLK("stat")))
+                    DGA("pump", () => (IDV("bumb", ""), CLK("bomb")))
                     DGA("kill", () => {
                         BTN(["sync", "read", "prov", "send", "dump", "rest", "pump", "kill"], [])
                         TIP(`killed${w.terminate() ?? ""}`)
