@@ -139,14 +139,15 @@
         reader.onload = e => IDV("data", e.target.result)
         reader.readAsText(file)
         document.getElementById("sync").disabled || BTN([], ["send"])
-        TIP(`TX has been loaded.`)
         BTN([], ["save", "test", "wipe"])
+        TIP(`TX has been loaded.`)
     })
     DGA("stat", "change", (e) => {
         const [reader, file] = [new FileReader(), ...e.target.files]
         if (!file) return
         reader.onload = e => worker.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
         reader.readAsArrayBuffer(file)
+        BTN([], ["kill"])
         TIP(`Resting....`)
     })
     DGA("bomb", "change", (e) => {
@@ -154,7 +155,7 @@
         if (!file) return
         reader.onload = e => worker.postMessage({ action: "pump", data: new Uint8Array(e.target.result) })
         reader.readAsArrayBuffer(file)
-        BTN(["sync", "read", "prov", "dump", "rest", "pump"], [])
+        BTN(["sync", "read", "prov", "dump", "rest", "pump"], ["kill"])
         TIP(`Pumping...`)
     })
     DGA("data", "input", function () {
