@@ -45,55 +45,58 @@
             ((e) => e.scrollTop = e.scrollHeight)(document.getElementById('tips'))
         },
         DGA: (id, e, f) => typeof e === "string" ? document.getElementById(id).addEventListener(e, f) : document.getElementById(id).onclick = e,
-        WRK: (w) => (e) => {
+        INI: () => {
+            BTN([], ["sync", "read", "load", "wipe", "rest", "pump"])
+            TIP("Loaded.")
+            DGA("sync", () => {
+                BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
+                TIP("Syncing...")
+                worker.postMessage({ action: "sync" })
+            })
+            DGA("read", () => {
+                BTN([], ["prov", "dump", "kill"])
+                worker.postMessage({ action: "read" })
+            })
+            DGA("prov", () => {
+                BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
+                TIP("Proving...")
+                worker.postMessage({ action: "prov" })
+            })
+            DGA("load", () => (IDV("file", ""), CLK("file")))
+            DGA("send", () => {
+                BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
+                TIP("Sending...")
+                worker.postMessage({ action: "send", data: IDV("data") })
+            })
+            DGA("save", () => {
+                if (!IDV("data")) return
+                const a = document.createElement("a")
+                a.href = URL.createObjectURL(new Blob([IDV("data")], { type: "text/plain;charset=utf-8" }))
+                a.download = `TX-${new Date().getTime()}.txt`
+                a.click()
+            })
+            DGA("test", () => worker.postMessage({ action: "test", data: IDV("data") }))
+            DGA("wipe", () => {
+                IDV("data", "")
+                BTN(["send", "save", "test"], [])
+            })
+            DGA("dump", () => worker.postMessage({ action: "dump" }))
+            DGA("rest", () => (IDV("stat", ""), CLK("stat")))
+            DGA("pump", () => (IDV("bomb", ""), CLK("bomb")))
+            DGA("kill", () => {
+                BTN(["sync", "read", "prov", "send", "dump", "rest", "pump", "kill"], [])
+                TIP(`killed${worker.terminate() ?? ""}`)
+                CLK("wipe")
+                document.getElementById('prog').style.width = "0%"
+                worker = new Worker("./index.js", { type: "module" })
+                worker.onmessage = WRK
+            })
+        },
+        WRK: (e) => {
             if (e.data.mesg !== "") TIP(e.data.mesg)
             switch (e.data.type) {
                 case "init":
-                    BTN([], ["sync", "read", "load", "wipe", "rest", "pump"])
-                    TIP("Loaded.")
-                    DGA("sync", () => {
-                        BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
-                        TIP("Syncing...")
-                        w.postMessage({ action: "sync" })
-                    })
-                    DGA("read", () => {
-                        BTN([], ["prov", "dump", "kill"])
-                        w.postMessage({ action: "read" })
-                    })
-                    DGA("prov", () => {
-                        BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
-                        TIP("Proving...")
-                        w.postMessage({ action: "prov" })
-                    })
-                    DGA("load", () => (IDV("file", ""), CLK("file")))
-                    DGA("send", () => {
-                        BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
-                        TIP("Sending...")
-                        w.postMessage({ action: "send", data: IDV("data") })
-                    })
-                    DGA("save", () => {
-                        if(!IDV("data")) return
-                        const a = document.createElement("a")
-                        a.href = URL.createObjectURL(new Blob([IDV("data")], { type: "text/plain;charset=utf-8" }))
-                        a.download = `TX-${new Date().getTime()}.txt`
-                        a.click()
-                    })
-                    DGA("test", () => w.postMessage({ action: "test", data: IDV("data") }))
-                    DGA("wipe", () => {
-                        IDV("data", "")
-                        BTN(["send", "save", "test"],[])
-                    })
-                    DGA("dump", () => w.postMessage({ action: "dump" }))
-                    DGA("rest", () => (IDV("stat", ""), CLK("stat")))
-                    DGA("pump", () => (IDV("bumb", ""), CLK("bomb")))
-                    DGA("kill", () => {
-                        BTN(["sync", "read", "prov", "send", "dump", "rest", "pump", "kill"], [])
-                        TIP(`killed${w.terminate() ?? ""}`)
-                        CLK("wipe")
-                        document.getElementById('prog').style.width = "0%"
-                        worker = new Worker("./index.js", { type: "module" })
-                        worker.onmessage = WRK(worker)
-                    })
+                    INI()
                     break
                 case "synced":
                     BTN([], ["sync", "read", "prov", "dump", "rest"])
@@ -120,14 +123,14 @@
                     BTN([], ["dump"])
                     break
                 case "pump":
-                    BTN([], ["sync", "read", "prov" , "dump", "rest", "pump"])
+                    BTN([], ["sync", "read", "prov", "dump", "rest", "pump"])
                     break
                 case "test":
                     break
             }
         }
     })
-    worker.onmessage = WRK(worker)
+    worker.onmessage = WRK
     TIP("Loading...")
     DGA("file", "change", (e) => {
         const [reader, file] = [new FileReader(), ...e.target.files]
