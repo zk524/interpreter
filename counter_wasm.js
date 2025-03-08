@@ -200,8 +200,8 @@ function debugString(val) {
 /**
  * @returns {bigint}
  */
-export function counter() {
-    const ret = wasm.counter();
+export function read_state() {
+    const ret = wasm.read_state();
     return BigInt.asUintN(64, ret);
 }
 
@@ -274,10 +274,10 @@ export function dump_state() {
 /**
  * @param {Uint8Array} buffer
  */
-export function set_counter_circuit_wasm(buffer) {
+export function set_contract_circuit_wasm(buffer) {
     const ptr0 = passArray8ToWasm0(buffer, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    wasm.set_counter_circuit_wasm(ptr0, len0);
+    wasm.set_contract_circuit_wasm(ptr0, len0);
 }
 
 /**
@@ -292,11 +292,11 @@ export function verify_tx_wasm(buffer) {
 }
 
 function __wbg_adapter_28(arg0, arg1, arg2) {
-    wasm.closure798_externref_shim(arg0, arg1, arg2);
+    wasm.closure780_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_127(arg0, arg1, arg2, arg3) {
-    wasm.closure941_externref_shim(arg0, arg1, arg2, arg3);
+    wasm.closure1327_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 const __wbindgen_enum_RequestCredentials = ["omit", "same-origin", "include"];
@@ -606,8 +606,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper1950 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 799, __wbg_adapter_28);
+    imports.wbg.__wbindgen_closure_wrapper1827 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 781, __wbg_adapter_28);
         return ret;
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
