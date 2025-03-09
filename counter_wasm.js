@@ -198,6 +198,14 @@ function debugString(val) {
     return className;
 }
 /**
+ * @returns {Promise<void>}
+ */
+export function test() {
+    const ret = wasm.test();
+    return ret;
+}
+
+/**
  * @returns {bigint}
  */
 export function read_state() {
@@ -292,11 +300,11 @@ export function verify_tx_wasm(buffer) {
 }
 
 function __wbg_adapter_28(arg0, arg1, arg2) {
-    wasm.closure780_externref_shim(arg0, arg1, arg2);
+    wasm.closure785_externref_shim(arg0, arg1, arg2);
 }
 
-function __wbg_adapter_127(arg0, arg1, arg2, arg3) {
-    wasm.closure1327_externref_shim(arg0, arg1, arg2, arg3);
+function __wbg_adapter_128(arg0, arg1, arg2, arg3) {
+    wasm.closure1335_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 const __wbindgen_enum_RequestCredentials = ["omit", "same-origin", "include"];
@@ -422,7 +430,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_127(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_128(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -606,8 +614,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper1827 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 781, __wbg_adapter_28);
+    imports.wbg.__wbindgen_closure_wrapper1826 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 786, __wbg_adapter_28);
         return ret;
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
