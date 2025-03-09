@@ -47,7 +47,7 @@
         },
         INI: () => {
             BTN([], ["sync", "read", "load", "wipe", "rest", "pump"])
-            TIP("Loaded.")
+            TIP("Loaded")
             DGA("sync", () => {
                 BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
                 TIP("Syncing...")
@@ -85,7 +85,7 @@
             DGA("pump", () => (fileHandler="pump", CLK("file")))
             DGA("kill", () => {
                 BTN(["sync", "read", "prov", "send", "dump", "rest", "pump", "kill"], [])
-                TIP(`killed${worker.terminate() ?? ""}`)
+                TIP(`Killed${worker.terminate() ?? ""}`)
                 CLK("wipe")
                 document.getElementById('prog').style.width = "0%"
                 worker = new Worker("./index.js", { type: "module" })
@@ -140,7 +140,7 @@
                 reader.readAsText(file)
                 document.getElementById("sync").disabled || BTN([], ["send"])
                 BTN([], ["save", "test", "wipe"])
-                TIP(`TX has been loaded.`)
+                TIP(`TX has been loaded`)
                 break
             case "rest":
                 reader.onload = e => worker.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
