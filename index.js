@@ -1,4 +1,4 @@
-import init, { sync_state, read_state, generate_tx, send_tx, dump_state, rest_state, set_contract_circuit_wasm, verify_tx_wasm } from './counter_wasm.js'
+import init, { sync_state, sync_state_2, read_state, generate_tx, send_tx, dump_state, rest_state, verify_tx, set_contract_circuit_wasm } from './counter_wasm.js'
 init().then(() => {
     self.on_tips = (mesg) => self.postMessage({ type: 'mesg', mesg })
     self.on_progress = (a, b) => self.postMessage({ type: 'prog', a, b })
@@ -8,6 +8,14 @@ init().then(() => {
             case "sync":
                 try {
                     await sync_state()
+                    self.postMessage({ type: "synced" })
+                } catch {
+                    self.postMessage({ type: 'mesg' })
+                }
+                break
+            case "syn2":
+                try {
+                    await sync_state_2()
                     self.postMessage({ type: "synced" })
                 } catch {
                     self.postMessage({ type: 'mesg' })
@@ -29,12 +37,14 @@ init().then(() => {
                 break
             case "send":
                 try {
-                    const count = Number(read_state())
-                    self.postMessage({ type: "mesg", mesg: `Count will change from ${count} to ${count + 1}` })
-                    await send_tx(e.data.data)
+                    const data = e.data.data
+                    if (!data) return
+                    const data_strip = data.startsWith("0x") ? data.slice(2) : data
+                    const tx = new Uint8Array(data_strip.match(/.{1,2}/g).map(byte => parseInt(byte, 16)))
+                    await send_tx(tx)
                     self.postMessage({ type: "sent" })
-                } catch {
-                    self.postMessage({ type: "mesg" })
+                } catch (e) {
+                    self.postMessage({ type: "mesg", mesg: e })
                 }
                 break
             case "dump":
@@ -52,18 +62,18 @@ init().then(() => {
                     self.postMessage({ type: "mesg" })
                 }
                 break
-            case "pump":
+            case "code":
                 try {
                     set_contract_circuit_wasm(e.data.data)
                 } catch { }
                 finally {
-                    self.postMessage({ type: "pump" })
+                    self.postMessage({ type: "code" })
 
                 }
                 break
             case "test":
                 try {
-                    verify_tx_wasm(e.data.data)
+                    verify_tx(e.data.data)
                     self.postMessage({ type: "test" })
                 } catch {
                     self.postMessage({ type: "mesg" })

@@ -1,40 +1,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<div id="proc"><div id="prog"></div></div>
+<div id="proc">
+    <div id="prog"></div>
+</div>
 <span>TPS</span>
 <button id="sync" disabled>SYNC</button>
 <button id="read" disabled>READ</button>
 <button id="prov" disabled>PROV</button>
+<button id="syn2" disabled>SYN2</button>
 <span>Transaction</span>
 <button id="load" disabled>LOAD</button>
 <button id="send" disabled>SEND</button>
 <button id="save" disabled>SAVE</button>
 <button id="test" disabled>TEST</button>
-<button id="wipe" disabled>WIPE</button>
 <span>System</span>
+<button id="code" disabled>CODE</button>
 <button id="dump" disabled>DUMP</button>
 <button id="rest" disabled>REST</button>
-<button id="pump" disabled>PUMP</button>
-<button id="kill" disabled>KILL</button><br />
-<div id="show"><div id="tips"></div><textarea id="data" disabled></textarea></div>
+<button id="kill" disabled>KILL</button>
+<span>Witness</span><input id="witness">
+<div id="show">
+    <div id="tips"></div><textarea id="data" disabled></textarea>
+</div>
 <input id="file" type="file" />
 <ul>
     <li><span>SYNC</span>Get transaction list from network and update local state.</li>
     <li><span>READ</span>Get the stauts of counter.</li>
     <li><span>PROV</span>Generate ZK-proof and transaction payload, increase the value of counter by one.</li>
+    <li><span>SYN2</span>Get the transaction list in batches and synchronize faster。</li>
     <li><span>LOAD</span>Import transaction payload file.</li>
     <li><span>SEND</span>Send the generated transaction payload to the network.</li>
     <li><span>SAVE</span>Save the transaction payload locally.</li>
     <li><span>TEST</span>Verify if the transaction is valid.</li>
-    <li><span>WIPE</span>Clear the displayed transaction details.</li>
+    <li><span>CODE</span>Select your contract circuit file.</li>
     <li><span>DUMP</span>Persist the state locally to facilitate next synchronization.</li>
     <li><span>REST</span>Read locally saved state and apply.</li>
-    <li><span>PUMP</span>Use uploaded pre-generated circuit parameters to speed up proofs.<br />Considering safety concerns, binary files will not be made publicly available for the time being.</li>
     <li><span>KILL</span>Terminate this interpreter.</li>
+    <li><span>Witness</span>Format style.</li>
 </ul>
+<script defer>
+    document.head.append(Object.assign(document.createElement('style'), { textContent: `*{scrollbar-width: none} *::-webkit-scrollbar{display:none;width:0;background:transparent} html,button{font-family:"SF Mono",Menlo,Monaco,"Courier New",monospace;font-size:12px;color:#ddd;background-color:#222} body{padding:0 16px} button{margin:6px 0;border:1px solid #888;cursor:pointer} button:disabled{background-color:#888;cursor:auto} #tips,#data{height:300px;width:1024px;max-width:100%;margin:0 0;padding: 8px;box-sizing:border-box;color:#ddd;background-color:#222;border:none} #file{display:none} #prog{height:100%;width:0%;background-color:#090;transition:width 0.5s;} #proc{width:100%;height:12px;margin-bottom:8px} ul{padding:0 8;margin:16px 4px} li{margin-bottom:10px} span{display:block;font-weight:bold;margin:2px 0} p{margin:0 0 2px 0} #show {display:flex;width:100%;flex-direction:row;border:1px solid #888;margin:6px 0;} #tips {overflow-y:auto;box-sizing:border-box} @media (max-width:640px) {#show {flex-direction:column}} #witness{width:100%;background-color:#ddd;border:none}` }))
+</script>
 <script type="module">
-    document.head.append(Object.assign(document.createElement('style'), { textContent: `*{scrollbar-width: none} *::-webkit-scrollbar{display:none;width:0;background:transparent} html,button{font-family:"SF Mono",Menlo,Monaco,"Courier New",monospace;font-size:12px;color:#ddd;background-color:#222} body{padding:0 16px} button{margin:6px 0;border:1px solid #888;cursor:pointer} button:disabled{background-color:#888;cursor:auto} #tips,#data{height:300px;width:1024px;max-width:100%;margin:0 0;padding: 8px;box-sizing:border-box;color:#ddd;background-color:#222;border:none} input{display:none} #prog{height:100%;width:0%;background-color:#090;transition:width 0.5s;} #proc{width:100%;height:12px;margin-bottom:8px} ul{padding:0 8;margin:16px 4px} li{margin-bottom:10px} span{display:block;font-weight:bold;margin:2px 0} p{margin:0 0 2px 0} #show {display:flex;width:100%;flex-direction:row;border:1px solid #888;margin:6px 0;} #tips {overflow-y:auto;box-sizing:border-box} @media (max-width:640px) {#show {flex-direction:column}}` }))
+    import "https://cdn.jsdelivr.net/npm/idb@8.0.2/build/umd.min.js"
     Object.assign(window, {
         worker: new Worker("./index.js", { type: "module" }), fileHandler: "",
+        db: idb.openDB('db', void 0, {
+            upgrade: _ => _.objectStoreNames.contains("data") || _.createObjectStore('data', { keyPath: 'key' })
+        }),
         CLK: (id) => document.getElementById(id).click(),
         BTN: (a, b) => [a, b].forEach((a, i) => a.forEach(id => id && (document.getElementById(id).disabled = !i))),
         IDV: (id, v) => v === void 0 ? document.getElementById(id).value : (document.getElementById(id).value = v),
@@ -46,24 +58,30 @@
             ((e) => e.scrollTop = e.scrollHeight)(document.getElementById('tips'))
         },
         INI: () => {
-            BTN([], ["sync", "read", "load", "wipe", "rest", "pump"])
+            BTN([], ["sync", "syn2", "read", "load", "dump", "rest", "code", "kill"])
             TIP("Loaded")
             DGA("sync", () => {
-                BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
+                BTN(["sync", "syn2", "read", "prov", "send", "code", "dump", "rest"], [])
                 TIP("Syncing...")
                 worker.postMessage({ action: "sync" })
             })
+            DGA("syn2", () => {
+                BTN(["sync", "syn2", "read", "prov", "send", "code", "dump", "rest"], [])
+                TIP("Syncing...")
+                worker.postMessage({ action: "syn2" })
+            })
             DGA("read", () => {
-                BTN([], ["prov", "dump", "kill"])
+                BTN([], ["prov"])
                 worker.postMessage({ action: "read" })
             })
             DGA("prov", () => {
-                BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
+                BTN(["sync", "syn2", "read", "prov", "send", "code", "dump", "rest"], [])
+                TIP(`Your witness input is: ${IDV("witness")}`)
                 TIP("Proving...")
-                worker.postMessage({ action: "prov" })
+                worker.postMessage({ action: "prov", data: IDV("witness") })
             })
             DGA("send", () => {
-                BTN(["sync", "read", "prov", "send", "dump", "rest"], ["kill"])
+                BTN(["sync", "syn2", "read", "prov", "send", "code", "dump", "rest"], [])
                 TIP("Sending...")
                 worker.postMessage({ action: "send", data: IDV("data") })
             })
@@ -75,58 +93,58 @@
                 a.click()
             })
             DGA("test", () => worker.postMessage({ action: "test", data: IDV("data") }))
-            DGA("wipe", () => {
-                IDV("data", "")
-                BTN(["send", "save", "test"], [])
-            })
+            DGA("load", () => (fileHandler = "load", CLK("file")))
+            DGA("code", () => (fileHandler = "code", CLK("file")))
             DGA("dump", () => worker.postMessage({ action: "dump" }))
-            DGA("load", () => (fileHandler="load", CLK("file")))
-            DGA("rest", () => (fileHandler="rest", CLK("file")))
-            DGA("pump", () => (fileHandler="pump", CLK("file")))
+            DGA("rest", async () => {
+                const state = await db.then((_) => _.get("data", "state"))
+                if (!state) return
+                const reader = new FileReader()
+                reader.onload = (e) => worker.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
+                reader.readAsArrayBuffer(state.data)
+            })
             DGA("kill", () => {
-                BTN(["sync", "read", "prov", "send", "dump", "rest", "pump", "kill"], [])
+                BTN(["sync", "syn2", "read", "prov", "send", "dump", "rest", "code", "kill"], [])
                 TIP(`Killed${worker.terminate() ?? ""}`)
-                CLK("wipe")
                 document.getElementById('prog').style.width = "0%"
                 worker = new Worker("./index.js", { type: "module" })
                 worker.onmessage = WRK
             })
         },
-        WRK: (e) => {
+        WRK: async (e) => {
             if (e.data.mesg !== "") TIP(e.data.mesg)
             switch (e.data.type) {
                 case "init":
                     INI()
                     break
                 case "synced":
-                    BTN([], ["sync", "read", "prov", "dump", "rest"])
+                    BTN([], ["sync", "syn2", "read", "prov", "code", "dump", "rest"])
                     IDV("data") && BTN([], ["send"])
                     break
                 case "prov":
-                    BTN([], ["sync", "read", "prov", "send", "save", "test", "dump", "rest"])
+                    BTN([], ["sync", "syn2", "read", "prov", "send", "save", "test", "code", "dump", "rest"])
                     IDV("data", e.data.data)
                     break
                 case "sent":
-                    BTN(["send"], ["sync", "read", "prov", "dump", "rest"])
+                    BTN(["send"], ["sync", "syn2", "read", "prov", "code", "dump", "rest"])
                     break
                 case "prog":
                     document.getElementById('prog').style.width = Math.ceil(Number(e.data.a) / Number(e.data.b) * 100) + '%'
                     TIP(`Progress: ${e.data.a} / ${e.data.b}`)
                     break
                 case "dump":
-                    const a = document.createElement("a")
-                    a.href = URL.createObjectURL(new Blob([e.data.data], { type: "application/gzip" }))
-                    a.download = `STATE-${new Date().getTime()}.gz`
-                    a.click()
+                    const data = new Blob([e.data.data], { type: "application/gzip" })
+                    await db.then((_) => _.put("data", { key: "state", data }))
+                    TIP("Dumped")
                     break
                 case "rest":
                     BTN([], ["dump"])
                     break
-                case "pump":
-                    BTN([], ["sync", "read", "prov", "dump", "rest", "pump"])
+                case "code":
+                    BTN([], ["sync", "syn2", "read", "prov", "code", "dump", "rest"])
                     break
             }
-        }
+        },
     })
     worker.onmessage = WRK
     TIP("Loading...")
@@ -134,25 +152,19 @@
         const [reader, file] = [new FileReader(), ...e.target.files]
         if (!file) return
         IDV("file", "")
-        switch(fileHandler){
+        switch (fileHandler) {
             case "load":
                 reader.onload = e => IDV("data", e.target.result)
                 reader.readAsText(file)
                 document.getElementById("sync").disabled || BTN([], ["send"])
-                BTN([], ["save", "test", "wipe"])
+                BTN([], ["save", "test"])
                 TIP(`TX has been loaded`)
                 break
-            case "rest":
-                reader.onload = e => worker.postMessage({ action: "rest", data: new Uint8Array(e.target.result) })
+            case "code":
+                reader.onload = e => worker.postMessage({ action: "code", data: new Uint8Array(e.target.result) })
                 reader.readAsArrayBuffer(file)
-                BTN([], ["kill"])
-                TIP(`Resting....`)
-                break
-            case "pump":
-                reader.onload = e => worker.postMessage({ action: "pump", data: new Uint8Array(e.target.result) })
-                reader.readAsArrayBuffer(file)
-                BTN(["sync", "read", "prov", "dump", "rest", "pump"], ["kill"])
-                TIP(`Pumping...`)
+                BTN(["sync", "syn2", "read", "prov", "dump", "rest", "code"], [])
+                TIP(`Setting contract...`)
                 break
         }
     })
